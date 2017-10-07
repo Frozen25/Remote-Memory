@@ -1,0 +1,22 @@
+installar fltk
+
+sudo apt-get install libfltk1.3-dev
+
+compilar
+
+g++ part4.cpp -o part4 -std=c++11 `fltk-config --ldflags`
+
+
+y en la funcion de callback hacen todo :v
+
+
+
+videos:
+
+parte 1 es como instalar
+parte 2 es no se
+parte 3 es hacer figuras
+parte 4 es botones
+
+parte 1 : https://youtu.be/y4c-EtRuS14
+parte 4: https://youtu.be/cK4ipYBut44
