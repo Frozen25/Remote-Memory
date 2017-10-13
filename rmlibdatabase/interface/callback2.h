@@ -32,7 +32,7 @@ void callback2(Fl_Widget*, void* ) {
 
 		    	
 
-		    	Text *txt = new Text(Point(w/2+200,160+50*cont_y),FL_HELVETICA,25,FL_RED, keyn);
+		    	Text *txt = new Text(Point(w/2+100,160+50*cont_y),FL_HELVETICA,25,FL_RED, keyn);
 		    	
     			window.attach(*txt);
 
@@ -61,7 +61,7 @@ void callback2(Fl_Widget*, void* ) {
     			Line *lineizq = new Line(Point(w/2+400,140+50*cont_y),Point(w/2+400,160+50*cont_y),1,FL_WHITE);
     			window.attach(*lineizq);
 
-    			Text *txt2 = new Text(Point(w/2+200,160+50*cont_y),FL_HELVETICA,25,FL_RED, sizen );
+    			Text *txt2 = new Text(Point(w/2+365,160+50*cont_y),FL_HELVETICA,25,FL_RED, sizen );
 		    	
     			window.attach(*txt2);
 
