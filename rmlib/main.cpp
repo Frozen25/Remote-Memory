@@ -1,5 +1,7 @@
 #include <iostream>
-#include "rmlib.h"
+#include "rmlib.cpp"
+#include "rmref_h/rmRef_H.cpp"
+#include "encryption/encryption.cpp"
 
 using namespace std;
 
@@ -17,15 +19,24 @@ int main()
 
     string gato = serialize(ptr2, sizeof(double));
 
-    rm_init("127.0.0.1", 10500, "", 4464);
-    rm_new("a1", ptr1, sizeof(char));
-    rm_new("a4", ptr2, sizeof(double));
-    rm_new("a3", ptr3, sizeof(int));
-    rm_new("a5", ptr2, sizeof(double));
+    rm_init("127.0.0.1", 10529, "", 4464);
+    rm_new("dato", ptr1, sizeof(char));
+    rm_new("b5", ptr2, sizeof(double));
+    rm_new("a5", ptr3, sizeof(int));
+    rm_new("ej", ptr2, sizeof(double));
 
-    rmRef_H hola = rm_get("a1");
+    rm_new("key", ptr1, sizeof(char));
+    rm_new("k1", ptr2, sizeof(double));
+    rm_new("k3", ptr3, sizeof(int));
+    rm_new("k7", ptr2, sizeof(double));
 
-    rmRef_H prueba = rm_get("a3");
+    rmRef_H hola = rm_get("k1");
+
+    rm_delete(&hola);
+
+    //cout <<  "HOLA " <<(*((char*) hola.get_value())) << endl;
+
+    /*rmRef_H prueba = rm_get("a3");
 
     rmRef_H prueba2 = rm_get("a4");
 
@@ -54,6 +65,6 @@ int main()
     cout << ( prueba2 == prueba3 )<< endl;
 
     cout << ( hola != prueba3 )<< endl;
-
+    */
     return 0;
 }

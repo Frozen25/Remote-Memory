@@ -28,7 +28,7 @@ void rm_init (char* ip, int port, char* ipHA, int portHA)
 
 }
 
-void rm_new (char* _key, void* value, int value_size)
+void rm_new(char* _key, void* value, int value_size)
 {
     try
     {
@@ -77,17 +77,25 @@ rmRef_H rm_get(char* _key)
     std::vector<std::string> splitMessage = split(decrypt(msg), ',');
     //std::vector<std::string> splitMessage = split((msg), ',');
 
-    std::cout << "VALUE: " << splitMessage[2] << std::endl;
+    std::cout << "VALUE: " << splitMessage[0] << std::endl;
+    if (splitMessage[0] != "-1"){
+        void* temp = deserialize(splitMessage[2]);
+    
 
-    void* temp = deserialize(splitMessage[2]);
+    //void* temp = deserialize(splitMessage[2]);
 
     ref_h.set_key(splitMessage[0]);
     ref_h.set_size(atoi(splitMessage[1].c_str()));
     ref_h.set_value(temp);
     ref_h.set_svalue(splitMessage[2]);
-
-    if (split(decrypt(ref_h.get_key()), ',')[0] == "-1")
+    }
+    else{
+        std::cout << splitMessage[0] << std::endl;
         ref_h.set_key("-1");
+    }
+
+
+   
 
     return ref_h;
 }
@@ -96,7 +104,8 @@ void rm_delete(rmRef_H* handler)
 {
     try
     {
-        std::string msg = "3," + handler->get_key() + ",";
+        std::string msg = "3," + handler->get_key() + "," + std::to_string(handler->get_size()) + ","
+                                                                                + handler->get_svalue();
         char *key = (char *) encrypt(msg).c_str();
 
         if (send(sock, key, strlen(key), 0) < 0) {
@@ -107,7 +116,7 @@ void rm_delete(rmRef_H* handler)
         recv(sock, server_reply, 2000, 0);
         std::string reply(server_reply);
 
-        if (split(decrypt(server_reply), ',')[0] == "EXCEPTION_NOT_DELETED")
+        if (split(decrypt(server_reply), ',')[0] == "-1")
             throw 3;
 
         std::cout << decrypt(server_reply) << std::endl;
