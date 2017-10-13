@@ -19,7 +19,7 @@ void Server::init()
 
     server.sin_family = AF_INET;
     server.sin_addr.s_addr = INADDR_ANY;
-    server.sin_port = htons( 10502 );
+    server.sin_port = htons( 10529 );
 
     if( bind(socket_desc,(struct sockaddr *)&server, sizeof(server)) < 0)
     {
@@ -33,6 +33,9 @@ void Server::init()
 
     puts("Waiting for incoming connections...");
     c = sizeof(struct sockaddr_in);
+
+    std::thread collectManager(&Server::collect, this);
+    collectManager.detach();
 }
 
 void Server::run()
@@ -65,8 +68,8 @@ void Server::manage(int* socket_desc) {
 
     while ((read_size = recv(sock, client_message, BUFFER_SIZE, 0)) > 0 && isAlive)
     {
-        //std::string msg(decrypt(client_message));
-        std::string msg((client_message));
+        std::string msg(decrypt(client_message));
+        //std::string msg((client_message));
         container = split(msg, ',');
 
         sendSwitcher(&sock, container);
@@ -99,49 +102,49 @@ void Server::sendSwitcher(int* socket_desc, std::vector<std::string>& message)
     package.set_size(atoi(message[2].c_str()));
     package.set_value(message[3]);
 
-    std::string callBackMessage = "";
+    std::string callBackMessage;
 
     switch (message[0][0])
     {
-        case '1':
+        case '1': // agregar
 
             if (linkedDataBase.isInList(message[1]) || cacheDataBase.isInList(message[1]))
             {
-                callBackMessage = "-1,\n";
+                callBackMessage = "-1,";
             }
             else
             {
                 add(package);
-                callBackMessage = "Added\n";
+                callBackMessage = "Added";
             }
             break;
-        case '2':
+        case '2':  ///get
             if (!linkedDataBase.isInList(message[1]) && !cacheDataBase.isInList(message[1]))
             {
-                callBackMessage = "-1,\n";
+                callBackMessage = "-1,";
             }
             else
             {
-                callBackMessage = find(message[1]).to_string();
+              callBackMessage = find(message[1]).to_string();
             }
             break;
-        case '3':
+        case '3':  ///delete
             if (!linkedDataBase.isInList(message[1]) && !cacheDataBase.isInList(message[1]))
             {
-                callBackMessage = "EXCEPTION_NOT_DELETED\n";
+                callBackMessage = "-1,";
             }
             else
             {
                 erase(message[1]);
-                callBackMessage = "Removed\n";
+                callBackMessage = "Removed";
             }
             break;
         default:
-            callBackMessage = "Unspecified action\n";
+            callBackMessage = "Unspecified action";
     }
 
-    //strcpy(callBackBuffer, encrypt(callBackMessage).c_str());
-    strcpy(callBackBuffer, callBackMessage.c_str());
+    strcpy(callBackBuffer, encrypt(callBackMessage).c_str());
+    //strcpy(callBackBuffer, callBackMessage.c_str());
     write(sock, callBackBuffer, strlen(callBackBuffer));
 }
 
@@ -165,6 +168,23 @@ const std::vector<std::string> Server::split(const std::string& split, const cha
         resultVector.push_back(buff);
 
     return resultVector;
+}
+
+void Server::collect()
+{
+    while (isAlive)
+    {
+        for (int i = 0; i < linkedDataBase.size(); ++i)
+        {
+            if (linkedDataBase[i].get_reference() == 0)
+            {
+                erase(linkedDataBase[i].get_key());
+                print();
+            }
+        }
+        std::this_thread::sleep_for (std::chrono::seconds(10));
+    }
+
 }
 
 void Server::add(InfoContainer container)
@@ -220,6 +240,11 @@ InfoContainer Server::find(std::string key)
     }
 }
 
+InfoContainer* Server::findPointer(std::string key)
+{
+    return linkedDataBase.findPointer(key);
+}
+
 void Server::kill()
 {
     isAlive = false;
@@ -234,8 +259,6 @@ void Server::revive()
 {
     isAlive = true;
 }
-
-
 ListHandler<InfoContainer>& Server::getlist()
 {
     return linkedDataBase;
@@ -244,11 +267,10 @@ ListHandler<InfoContainer>& Server::getcache()
 {
     return cacheDataBase;
 }
-
 void Server::print()
 {
 
-    std::cout << "/////////////////LISTA////////////////////" << std::endl;
+    std::cout << "/////////////////////////////////////" << std::endl;
     for (int i = 0; i < linkedDataBase.size(); i++)
     {
         std::cout << linkedDataBase[i].get_key() << "," << linkedDataBase[i].get_size() << std::endl;
